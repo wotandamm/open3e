@@ -22,6 +22,7 @@ import Open3Edatapoints
 import Open3Ecodecs
 from Open3Ecodecs import *
 
+import Open3EudsClient
 
 class O3Eclass():
     def __init__(self, ecutx:int=0x680, ecurx:int=0,
@@ -125,7 +126,8 @@ class O3Eclass():
         config['p2_star_timeout'] = 20
         
         # run uds client
-        self.uds_client = Client(conn, config=config)
+        #self.uds_client = Client(conn, config=config)
+        self.uds_client = Open3EudsClient.Client(conn, config=config)
         self.uds_client.open()
         self.uds_client.logger.setLevel(loglevel)
 
@@ -140,8 +142,15 @@ class O3Eclass():
             while(True):
                 try:
                     Open3Ecodecs.flag_rawmode = raw
+
+                    start_time = time.time()
                     response = self.uds_client.read_data_by_identifier([did])
                     # return value and idstr
+                    end_time = time.time()
+                    print(f"[udsoncan:read_data_by_identifier] total time: {end_time-start_time}")
+
+                    #response = self.uds_client.read_data_by_identifier([did])
+                    ## return value and idstr
                     return response.service_data.values[did],self.dataIdentifiers[did].id
                 except Exception as e:
                     if(type(e) in [TimeoutError, udsoncan.exceptions.TimeoutException]):
